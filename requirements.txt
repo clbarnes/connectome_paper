@@ -1,0 +1,9 @@
+Pillow==3.0.0
+PyX==0.14
+Shapely==1.5.13
+connectome-utils==0.0.0
+decorator==4.0.4
+hiveplotter==0.1
+networkx==1.10
+numpy==1.10.1
+scipy==0.16.1
