@@ -34,12 +34,13 @@ out_root = '/home/cbarnes/work/code/connectome/paper/use_bct/controls/'
 
 
 def networkx_to_und_unwe_mat(G):
+
     return np.array(nx.to_numpy_matrix(
         G.to_undirected(),
         nodelist,
         weight=None,
         multigraph_weight=min
-    ))
+    )) * (1 - np.eye(len(nodelist)))
 
 
 def networkx_to_dir_unwe_mat(G):
@@ -48,7 +49,7 @@ def networkx_to_dir_unwe_mat(G):
         nodelist,
         weight=None,
         multigraph_weight=min
-    ))
+    )) * (1 - np.eye(len(nodelist)))
 
 
 def make_controls(graphs_dict, algos_dict):

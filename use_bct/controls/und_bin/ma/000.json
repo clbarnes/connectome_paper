@@ -1,6 +1,6 @@
 {
-  "assortativity": -0.7834751524032783,
-  "betweenness_centrality": 186.8807947019867,
+  "assortativity": -0.7840490981042052,
+  "betweenness_centrality": 188.11258278145695,
   "degree_distribution": [
     [
       0.0,
@@ -39,7 +39,7 @@
       6
     ],
     [
-      38.0,
+      37.0,
       2
     ],
     [
@@ -47,7 +47,7 @@
       4
     ],
     [
-      96.0,
+      95.0,
       2
     ],
     [
@@ -55,15 +55,15 @@
       2
     ],
     [
-      159.0,
+      158.0,
       8
     ]
   ],
-  "density": 0.04338738421596885,
-  "global_efficiency": 0.335089803671353,
-  "mean_clustering": 0.8973723998039711,
-  "modularity": 0.011699010337487029,
-  "path_length": 1.9654982628736541,
-  "small_worldness": 1.0005935584558034,
-  "transitivity": 0.19181250639647937
+  "density": 0.04312336362236254,
+  "global_efficiency": 0.33440775047120347,
+  "mean_clustering": 0.7470340691798346,
+  "modularity": 0.0489514785506039,
+  "path_length": 1.9718963915929966,
+  "small_worldness": 0.997544201487298,
+  "transitivity": 0.17786495859677187
 }

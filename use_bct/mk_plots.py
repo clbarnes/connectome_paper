@@ -73,7 +73,8 @@ for semirandom_comb_control in [True, False]:
             ax.set_xticklabels(['phys', 'comb'])
         fig.suptitle('semirandom' if semirandom_comb_control else 'random')
         plt.tight_layout()
-        plt.savefig('{}_{}.png'.format('semirandom' if semirandom_comb_control else 'random', phys_name), dpi=150)
+        plt.savefig('plots/metrics/{}_{}.png'.format('semirandom' if semirandom_comb_control else 'random', phys_name),
+                    dpi=150)
 
 # degree_distribution
 
@@ -145,4 +146,4 @@ for survival in [True, False]:
         despine(fig)
 
         plt.tight_layout()
-        plt.savefig('{}_{}_{}.png'.format('dd', phys_name, 'surv' if survival else 'freq'), dpi=150)
+        plt.savefig('plots/degdist/{}_{}_{}.png'.format('dd', phys_name, 'surv' if survival else 'freq'), dpi=150)
