@@ -14,9 +14,9 @@ GraphSpec.__new__.__defaults__ = (None, None, None)
 
 class Metric():
     __metaclass__ = ABCMeta
-    control_root = '/home/cbarnes/code/connectome/paper/control_graphs'
-    img_root = '/home/cbarnes/code/connectome/paper/metrics/img'
-    real_root = '/home/cbarnes/code/connectome/paper/real_graphs'
+    control_root = '/home/cbarnes/work/code/connectome/paper/control_graphs'
+    img_root = '/home/cbarnes/work/code/connectome/paper/metrics/img'
+    real_root = '/home/cbarnes/work/code/connectome/paper/real_graphs'
 
     @abstractproperty
     def metric_name(self):

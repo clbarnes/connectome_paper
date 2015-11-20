@@ -1,10 +1,8 @@
 import connectome_utils as utl
-from multiplex import MultiplexConnectome
 import bct
 import os
 import numpy as np
 from collections import Counter
-import networkx as nx
 import json
 import pandas as pd
 
@@ -49,12 +47,17 @@ def run_algos(adj):
     charpath = bct.charpath(bct.distance_bin(adj))
     d['path_length'] = charpath[0]
     d['global_efficiency'] = charpath[1]
-    d['mean_clustering'] = bct.clustering_coef_bu(adj).mean()
+    clustering = bct.clustering_coef_bu(adj)
+    d['mean_clustering'] = clustering.mean()
+    d['clustering'] = list(clustering)
     d['transitivity'] = bct.transitivity_bu(adj)
     d['modularity'] = bct.modularity_und(adj)[1]
     d['assortativity'] = bct.assortativity_bin(adj, 0)
-    d['betweenness_centrality'] = bct.betweenness_bin(adj).mean()
-    d['degree_distribution'] = degree_dist(adj)
+    betweenness_centrality = bct.betweenness_bin(adj)
+    d['mean_betweenness_centrality'] = betweenness_centrality.mean()
+    d['betweenness_centrality'] = list(betweenness_centrality)
+    # d['degree_distribution'] = degree_dist(adj)
+    d['degrees'] = list(adj.sum(axis=1))
 
     return d
 
@@ -150,6 +153,7 @@ def add_smallworld(*control_type_roots):
             add_to_json('small_worldness',
                         get_small_worldness(real_clustering, real_pathlength, rand_clustering, rand_pathlength),
                         real_file)
+
 
 if __name__ == '__main__':
     types = ['und_bin']

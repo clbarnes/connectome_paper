@@ -1,21 +1,24 @@
+import matplotlib
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import os
 import json
 from seaborn import despine
+from collections import Counter
+from itertools import chain
 plt.style.use('default')
 
 metrics = [
     'density',
     'path_length',
     'global_efficiency',
-    'mean_clustering',
+    'clustering',
     'transitivity',
     'modularity',
     'assortativity',
     'betweenness_centrality',
-#    'degree_distribution',
+    # 'degrees',
     'small_worldness'
 ]
 
@@ -51,12 +54,110 @@ def get_metrics_from_comb_controls(name, semirandom=True):
             d = json.load(f)
         rows.append([d[metric] for metric in metrics])
 
-    return pd.DataFrame(np.array(rows), columns=metrics)
+    return pd.DataFrame(np.array(rows), columns=metrics, dtype='object')
 
 
 def from_json(fname):
     with open(os.path.join(control_root, fname)) as f:
         return json.load(f)
+
+
+def box_and_cross(ax: matplotlib.axes._subplots.AxesSubplot, phys_real, comb_real, phys_control_column,
+                  comb_control_column):
+    ax.boxplot([phys_control_column, comb_control_column])
+    ax.scatter([1, 2], [phys_real, comb_real], marker='x')
+    ax.set_xticklabels(['phys', 'comb'])
+    # ax.set_ylabel(metric_name)
+
+
+def bars(ax: matplotlib.axes._subplots.AxesSubplot, phys_real, comb_real):
+    width = 0.8
+    ax.bar([n+1-0.5*width for n in [1, 2]], [phys_real, comb_real], width=width)
+    ax.set_xticklabels(['phys', 'comb'])
+
+
+def points2dist(points):
+    """
+    Value=x, freq=y
+    """
+
+    counts = Counter(points)
+    xy_pairs = []
+    for x, y in sorted(counts.items()):
+        xy_pairs.append([x, y])
+
+    return np.array(xy_pairs)
+
+
+def deg_dist(ax: matplotlib.axes._subplots.AxesSubplot, phys_real, comb_real, plot_survival=True):
+        phys_dd = points2dist(phys_real)
+        comb_dd = points2dist(comb_real)
+
+        phys_x = phys_dd[:, 0]
+        phys_y = phys_dd[:, 1]
+        comb_x = comb_dd[:, 0]
+        comb_y = comb_dd[:, 1]
+
+        if plot_survival:
+            phys_y, comb_y = surv(phys_y), surv(comb_y)
+            ax.plot(phys_x, phys_y, color='b', label='phys')
+            ax.plot(comb_x, comb_y, color='r', label='comb')
+
+            phys_e = np.average(phys_x, weights=phys_y)
+            ax.plot(*bestfit_log(phys_x[phys_x > phys_e], phys_y[phys_x > phys_e]), color='k', linestyle='--')
+            comb_e = np.average(comb_x, weights=comb_y)
+            ax.plot(*bestfit_log(comb_x[comb_x > comb_e], comb_y[comb_x > comb_e]), color='k', linestyle='--')
+        else:
+            ax.scatter(phys_x, phys_y, marker='x', color='b', label='phys')
+            ax.scatter(comb_x, comb_y, marker='x', color='r', label='comb')
+
+        ax.set_ylabel('survival function' if plot_survival else 'frequency')
+        ax.set_xlabel('degree')
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+        # xlims, ylims = mk_lims([phys_x, comb_x], [phys_y, comb_y], log=True)
+        # if not survival and phys_name == 'ac':
+        #     pass
+        # else:
+        #     ax.set_xlim(xlims)
+        #     ax.set_ylim(ylims)
+        ax.legend()
+
+
+def surv_plots(ax: matplotlib.axes._subplots.AxesSubplot, phys_real, phys_control_column, comb_real, comb_control_column):
+    phys_dist = points2dist(phys_real)
+    comb_dist = points2dist(comb_real)
+    phys_control_dist = points2dist(list(chain(phys_control_column)))
+    comb_control_dist = points2dist(list(chain(comb_control_column)))
+
+    ax.plot(phys_dist[:, 0], surv(phys_dist[:, 1]), color='b', label='phys')
+    ax.plot(phys_control_dist[:, 0], surv(phys_control_dist[:, 1]), color='b', linestyle='--', label='phys rand')
+    ax.plot(comb_dist[:, 0], surv(comb_dist[:, 1]), color='r', label='comb')
+    ax.plot(comb_control_dist[:, 0], surv(comb_control_dist[:, 1]), color='r', linestyle='--', label='comb rand')
+
+    # ax.set_xscale('log')
+    # ax.set_yscale('log')
+
+    ax.legend()
+
+
+global_plots = [
+    'density',
+    'path_length',
+    'global_efficiency',
+    # 'clustering',
+    'mean_clustering',
+    'transitivity',
+    'modularity',
+    'assortativity',
+    # 'betweenness_centrality',
+    'mean_betweenness_centrality',
+    # 'degrees',
+    'small_worldness'
+]
+
+
+## GLOBAL PLOTS
 
 for semirandom_comb_control in [True, False]:
 
@@ -66,17 +167,16 @@ for semirandom_comb_control in [True, False]:
         phys_control_data = get_metrics_from_phys_controls(phys_name)
         comb_data = from_json('{}_comb{}.json'.format(phys_name, '_semi' if semirandom_comb_control else ''))
         comb_control_data = get_metrics_from_comb_controls(phys_name, semirandom_comb_control)
-        for metric_name, ax in zip(metrics, ax_arr.flatten()):
-            ax.boxplot([phys_control_data[metric_name], comb_control_data[metric_name]])
-            ax.scatter([1, 2], [phys_data[metric_name], comb_data[metric_name]], marker='x')
+        for metric_name, ax in zip(global_plots, ax_arr.flatten()):
+            box_and_cross(ax, phys_data, comb_data, phys_control_data, comb_control_data)
             ax.set_ylabel(metric_name)
-            ax.set_xticklabels(['phys', 'comb'])
         fig.suptitle('semirandom' if semirandom_comb_control else 'random')
         plt.tight_layout()
-        plt.savefig('plots/metrics/{}_{}.png'.format('semirandom' if semirandom_comb_control else 'random', phys_name),
-                    dpi=150)
+        plt.savefig('plots/global_metrics/{}_{}.png'.format('semirandom' if semirandom_comb_control else 'random',
+                                                       phys_name), dpi=150)
 
 # degree_distribution
+
 
 def surv(arr):
     return 1 - np.cumsum(arr)/arr.sum()
@@ -109,41 +209,15 @@ def bestfit_log(x, y, deg=1):
 for survival in [True, False]:
     for phys_name in ['ac', 'ww']:
 
-        phys_dd = np.array(from_json(phys_name + '.json')['degree_distribution'])
-        comb_dd = np.array(from_json(phys_name + '_comb.json')['degree_distribution'])
+        phys_degrees = np.array(from_json(phys_name + '.json')['degrees'])
+        comb_degrees = np.array(from_json(phys_name + '_comb.json')['degrees'])
 
         fig, ax = plt.subplots(1)
 
-        phys_x = phys_dd[:, 0]
-        phys_y = phys_dd[:, 1]
-        comb_x = comb_dd[:, 0]
-        comb_y = comb_dd[:, 1]
+        deg_dist(ax, phys_degrees, comb_degrees, plot_survival=survival)
 
-        if survival:
-            phys_y, comb_y = surv(phys_y), surv(comb_y)
-            ax.plot(phys_x, phys_y, color='b', label='phys')
-            ax.plot(comb_x, comb_y, color='r', label='comb')
-
-            phys_e = np.average(phys_x, weights=phys_y)
-            ax.plot(*bestfit_log(phys_x[phys_x > phys_e], phys_y[phys_x > phys_e]), color='k', linestyle='--')
-            comb_e = np.average(comb_x, weights=comb_y)
-            ax.plot(*bestfit_log(comb_x[comb_x > comb_e], comb_y[comb_x > comb_e]), color='k', linestyle='--')
-        else:
-            ax.scatter(phys_x, phys_y, marker='x', color='b', label='phys')
-            ax.scatter(comb_x, comb_y, marker='x', color='r', label='comb')
-
-        ax.set_ylabel('survival function' if survival else 'frequency')
-        ax.set_xlabel('degree')
-        xlims, ylims = mk_lims([phys_x, comb_x], [phys_y, comb_y], log=True)
-        ax.set_xscale('log')
-        ax.set_yscale('log')
-        if not survival and phys_name == 'ac':
-            pass
-        else:
-            ax.set_xlim(xlims)
-            ax.set_ylim(ylims)
-        ax.legend()  # loc='lower left')
         despine(fig)
 
         plt.tight_layout()
-        plt.savefig('plots/degdist/{}_{}_{}.png'.format('dd', phys_name, 'surv' if survival else 'freq'), dpi=150)
+        plt.savefig('plots/nodewise_metrics/{}_{}_{}.png'.format('degdist', phys_name, 'surv' if survival else 'freq'),
+                    dpi=150)
