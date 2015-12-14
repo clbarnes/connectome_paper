@@ -4,7 +4,11 @@ import os
 import json
 from collections import Counter
 from itertools import chain
-from oo_attempt.file_tools import filename_iter
+try:
+    from oo_attempt.file_tools import filename_iter
+except (ImportError, SystemError):
+    from file_tools import filename_iter
+
 
 plt.style.use('default')
 

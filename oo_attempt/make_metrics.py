@@ -4,7 +4,10 @@ import numpy as np
 import json
 import pandas as pd
 import multiprocessing as mp
-from oo_attempt.seeds import set_seeds
+try:
+    from oo_attempt.seeds import set_seeds
+except (ImportError, SystemError):
+    from seeds import set_seeds
 
 set_seeds()
 

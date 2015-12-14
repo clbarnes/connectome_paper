@@ -5,7 +5,10 @@ from multiplex import MultiplexConnectome
 import os
 import bct
 import multiprocessing as mp
-from oo_attempt.seeds import set_seeds
+try:
+    from oo_attempt.seeds import set_seeds
+except (ImportError, SystemError):
+    from seeds import set_seeds
 
 set_seeds()
 
