@@ -5,6 +5,9 @@ from multiplex import MultiplexConnectome
 import os
 import bct
 import multiprocessing as mp
+from oo_attempt.seeds import set_seeds
+
+set_seeds()
 
 DATA_ROOT = '/home/cbarnes/work/code/connectome/construct2/combine/tgt_data'
 

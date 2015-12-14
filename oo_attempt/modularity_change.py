@@ -3,6 +3,9 @@ from oo_attempt.file_tools import filename_iter
 import numpy as np
 import os
 import json
+from oo_attempt.seeds import set_seeds
+
+set_seeds()
 
 data_root = 'graphs'
 source = 'ac'

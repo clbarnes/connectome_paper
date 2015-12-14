@@ -4,7 +4,7 @@ import os
 import json
 from collections import Counter
 from itertools import chain
-from oo_attempt.file_tools import get_root_path, get_spec_combinations, spec_to_name, filename_iter
+from oo_attempt.file_tools import filename_iter
 
 plt.style.use('default')
 
