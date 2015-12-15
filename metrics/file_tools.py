@@ -6,7 +6,7 @@ import os
 import bct
 import multiprocessing as mp
 try:
-    from oo_attempt.seeds import set_seeds
+    from metrics.seeds import set_seeds
 except (ImportError, SystemError):
     from seeds import set_seeds
 

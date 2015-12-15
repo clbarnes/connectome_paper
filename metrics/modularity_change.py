@@ -3,8 +3,8 @@ import numpy as np
 import os
 import json
 try:
-    from oo_attempt.file_tools import filename_iter
-    from oo_attempt.seeds import set_seeds
+    from metrics.file_tools import filename_iter
+    from metrics.seeds import set_seeds
 except (ImportError, SystemError):
     from file_tools import filename_iter
     from seeds import set_seeds

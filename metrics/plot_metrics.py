@@ -5,7 +5,7 @@ import json
 from collections import Counter
 from itertools import chain
 try:
-    from oo_attempt.file_tools import filename_iter
+    from metrics.file_tools import filename_iter
 except (ImportError, SystemError):
     from file_tools import filename_iter
 
