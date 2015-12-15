@@ -6,9 +6,9 @@ import os
 import bct
 import multiprocessing as mp
 try:
-    from metrics.seeds import set_seeds
+    from metrics.shared import set_seeds, push_exceptions
 except (ImportError, SystemError):
-    from seeds import set_seeds
+    from shared import set_seeds, push_exceptions
 
 set_seeds()
 
@@ -178,6 +178,7 @@ def make_controls(source_adj, out_dir, n=REPS+1):
         ))
 
 
+@push_exceptions
 def full_setup():
     out_root = 'graphs'
     for comb in get_spec_combinations():

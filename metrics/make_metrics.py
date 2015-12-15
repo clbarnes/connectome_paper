@@ -5,9 +5,9 @@ import json
 import pandas as pd
 import multiprocessing as mp
 try:
-    from metrics.seeds import set_seeds
+    from metrics.shared import set_seeds, push_exceptions
 except (ImportError, SystemError):
-    from seeds import set_seeds
+    from shared import set_seeds, push_exceptions
 
 set_seeds()
 
@@ -131,6 +131,11 @@ def get_control_type_roots(root):
     return [os.path.join(root, dirn) for dirn in os.listdir(root) if os.path.isdir(os.path.join(root, dirn))]
 
 
-if __name__ == "__main__":
+@push_exceptions
+def main():
     make_most_metrics('graphs')
     add_smallworld(*get_control_type_roots('graphs'))
+
+
+if __name__ == "__main__":
+    main()

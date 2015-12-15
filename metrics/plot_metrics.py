@@ -6,8 +6,10 @@ from collections import Counter
 from itertools import chain
 try:
     from metrics.file_tools import filename_iter
+    from metrics.shared import push_exceptions
 except (ImportError, SystemError):
     from file_tools import filename_iter
+    from shared import push_exceptions
 
 
 plt.style.use('default')
@@ -148,7 +150,8 @@ def exclude_from_list(lst, *exclude_substrs):
     ]
 
 
-if __name__ == "__main__":
+@push_exceptions
+def main():
     for metric_name, plot_fn in PLOT_FNS.items():
         print('Generating ' + metric_name)
         plot_metric(metric_name, plot_fn, SPEC_NAMES, filename='complete.png')
@@ -161,3 +164,6 @@ if __name__ == "__main__":
                 spec_names = exclude_from_list(SPEC_NAMES, not_phys_src, not_ma_tp)
                 plot_metric(metric_name, plot_fn, spec_names,
                             filename='not-{}_not-{}.png'.format(not_phys_src, not_ma_tp))
+
+if __name__ == "__main__":
+    main()
