@@ -15,19 +15,8 @@ except (ImportError, SystemError):
 set_seeds()
 
 N_CONTROLS = 100
-
-data_root = 'graphs'
-source = 'ac'
-extrasyn_tp = 'ma'
-
-ma_tp = 'str'
-if extrasyn_tp == 'ma':
-    extrasyn_tp += '_' + ma_tp
-
-extrasyn_root = os.path.join(data_root, extrasyn_tp)
-
-real_phys = np.load(os.path.join(data_root, 'gj-syn_{}'.format(source), 'adj.npy'))
-struc, mod = bct.modularity_und(real_phys)
+EXTRASYN_TP = 'ma'
+DATA_ROOT = 'graphs'
 
 
 def gen_controls(real_phys, extrasyn_root, n_controls=N_CONTROLS):
@@ -71,7 +60,9 @@ def shuffle_nodes(adj):
     """
     arr = adj.copy()
     g = nx.from_numpy_matrix(arr)
-    return nx.to_numpy_matrix(g, random.shuffle(g.nodes()))
+    nodelist = g.nodes()
+    random.shuffle(nodelist)
+    return np.array(nx.to_numpy_matrix(g, nodelist))
 
 
 def gen_shuffled(real_phys, extrasyn_root, n_controls=N_CONTROLS):
@@ -82,35 +73,55 @@ def gen_shuffled(real_phys, extrasyn_root, n_controls=N_CONTROLS):
 
 @push_exceptions
 def main():
-    # generate real values
-    real_extrasyn = np.load(os.path.join(extrasyn_root, 'adj.npy'))
-    real_comb = bct.binarize(real_phys + real_extrasyn)
-    real_comb_struc, real_comb_mod = bct.modularity_und(real_comb, kci=struc)
-    assert np.allclose(real_comb_struc, struc)
-    d = {
-        'real_phys': mod,
-        'real_comb': real_comb_mod,
-    }
-    # loop through the randomisation algorithms, generating the modularities for each
-    name_alg = {'control': gen_controls,
-                'random': gen_rands,
-                'shuffled': gen_shuffled}
-    for name, alg in sorted(name_alg.items()):
-        mods = []
-        for control in alg(real_phys, extrasyn_root):
-            comb_struc, comb_mod = bct.modularity_und(control, kci=struc)
-            assert np.allclose(comb_struc, struc)
-            mods.append(comb_mod)
-        d2 = {'{}_comb'.format(name): mods,
-              '{}_comb_mean'.format(name): np.mean(mods),
-              '{}_comb_std'.format(name): np.std(mods)}
-        d.update(d2)
+    print('MODULARITY CHANGE')
+    for source in ['ac', 'ww']:
+        print('  ' + source)
+        for ma_tp in ['str', 'wk']:
+            print('    ' + ma_tp)
+            extrasyn_tp = EXTRASYN_TP
+            if extrasyn_tp == 'ma':
+                extrasyn_tp += '_' + ma_tp
 
-    # write to file
-    out_root = 'mod_plots/{}_{}'.format(source, extrasyn_tp)
-    os.makedirs(out_root, exist_ok=True)
-    with open(os.path.join(out_root, 'data.json'), 'w') as f:
-        json.dump(d, f, indent=2, sort_keys=True)
+            extrasyn_root = os.path.join(DATA_ROOT, extrasyn_tp)
+
+            real_phys = np.load(os.path.join(DATA_ROOT, 'gj-syn_{}'.format(source), 'adj.npy'))
+            struc, mod = bct.modularity_und(real_phys)
+
+            # generate real values
+            real_extrasyn = np.load(os.path.join(extrasyn_root, 'adj.npy'))
+            real_comb = bct.binarize(real_phys + real_extrasyn)
+            real_comb_struc, real_comb_mod = bct.modularity_und(real_comb, kci=struc)
+            assert np.allclose(real_comb_struc, struc)
+
+            d = {
+                'real_phys': mod,
+                'real_comb': real_comb_mod,
+            }
+            # loop through the randomisation algorithms, generating the modularities for each
+            name_alg = {'control': gen_controls,
+                        'random': gen_rands,
+                        'shuffled': gen_shuffled}
+            for name, alg in sorted(name_alg.items()):
+                print('      Randomising by ' + name)
+                mods = []
+                for control in alg(real_phys, extrasyn_root):
+                    print('.', end='')
+                    comb_struc, comb_mod = bct.modularity_und(control, kci=struc)
+                    assert np.allclose(comb_struc, struc)
+                    mods.append(comb_mod)
+                d2 = {'{}_comb'.format(name): mods,
+                      '{}_comb_mean'.format(name): np.mean(mods),
+                      '{}_comb_std'.format(name): np.std(mods)}
+                d.update(d2)
+                if name == 'shuffled':
+                    1+1
+                print()
+
+            # write to file
+            out_root = 'mod_plots/{}_{}'.format(source, extrasyn_tp)
+            os.makedirs(out_root, exist_ok=True)
+            with open(os.path.join(out_root, 'data.json'), 'w') as f:
+                json.dump(d, f, indent=2, sort_keys=True)
 
 if __name__ == '__main__':
     main()
