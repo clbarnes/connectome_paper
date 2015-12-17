@@ -1,13 +1,22 @@
 gj-syn-ma_ac-str_sort-phys.pdf
 Notes: nodes sorted by physical degree, ball size determined by number of neurons at that position
 - Hub nodes (high-degree interneuron pairs AVA, AVB, PVC) do not participate strongly in the monoamine network
+  - they're likely to be coordinating fundamentally different things
+  - the monoamine rich club will be distinct
 - Monoamines plug the gap between sensory and motor neurons where there is little physical connectivity
+  - neurons intentionally isolated from direct interaction (allowing sensory processing) can still feed back over
+  longer timescales
 - Interneuron-motor monoamine connectivity is fairly sparse, concurrent with high synaptic and particularly gap
 junction connectivity
 - The physically-disconnected CAN pair (here classified as interneurons) participate significantly in the MA network
+  - Having disconnected neurons is counterintuitive, but if they interact with monoamines it makes more sense
 
 monoamine_strong_only.pdf
 Nodes sorted by degree
 - dop and tyr secretors restricted to sensory and motor respectively
+  - suggestive of transmitter having some global significance (as opposed to contextual)
 - dop secretory cells dominate in terms of number of nodes reached
-- Significant intra-class signalling in each subnetwork
+  - involved in setting a global state in the animal?
+- Significant intra-class signalling in each transmitter subnetwork
+- Most sensory neurons have some MA activity, where there are a significant number of interneurons and some motor
+neurons which don't
