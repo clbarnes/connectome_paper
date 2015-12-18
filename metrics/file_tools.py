@@ -221,6 +221,40 @@ def di_layers_setup():
     np.save(os.path.join(out_dir, 'adj.npy'), adj)
     make_controls(adj, controls_dir, directed=False)
 
+    # combinations
+    di_combinations_from_layers()
+
+
+def collapse_list_of_arrays(lst):
+    adj = lst[0]
+    for layer in lst[1:]:
+        adj += layer
+
+    return bct.binarize(adj)
+
+
+def di_combinations_from_layers():
+    out_root = os.path.join('graphs', 'di_layers')
+    for combination in [
+        ('gj', 'syn'),
+        ('gj', 'syn', 'ma'),
+        ('gj', 'syn', 'ma', 'np')
+    ]:
+        print('Combining {}'.format(combination))
+        out_dir = os.path.join(out_root, '-'.join(sorted(combination)))
+        control_dir = os.path.join(out_dir, 'controls')
+        os.makedirs(control_dir, exist_ok=True)
+
+        real_adj = collapse_list_of_arrays([np.load(os.path.join(out_root, layer, 'adj.npy')) for layer in combination])
+        np.save(os.path.join(out_dir, 'adj.npy'), real_adj)
+
+        for filename in filename_iter(REPS+1):
+            print('  generating {}'.format(filename))
+            adj = collapse_list_of_arrays(
+                    [np.load(os.path.join(out_root, layer, 'controls', filename)) for layer in combination]
+            )
+            np.save(os.path.join(control_dir, filename), adj)
+
 
 if __name__ == '__main__':
     undi_combinations_setup()
