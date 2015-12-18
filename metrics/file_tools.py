@@ -26,10 +26,9 @@ permutations = {
 }
 
 
-def networkx_to_und_unwe_mat(G):
-
+def networkx_to_unwe_mat(G, directed=False):
     return np.array(nx.to_numpy_matrix(
-        G.to_undirected(),
+        G.to_directed() if directed else G.to_undirected(),
         sorted(G.nodes()),
         weight=None,
         multigraph_weight=min
@@ -38,7 +37,7 @@ def networkx_to_und_unwe_mat(G):
 
 def get_original(data_root=DATA_ROOT, layers=permutations['layers'], source='ww', include_weak=False, directed=False,
         weighted=False):
-    if directed or weighted:
+    if weighted:
         raise NotImplementedError("Haven't implemented directed or weighted graphs yet")
 
     json_path = os.path.join(data_root, 'including_weak' if include_weak else 'strong_only', source,
@@ -49,9 +48,9 @@ def get_original(data_root=DATA_ROOT, layers=permutations['layers'], source='ww'
     C = MultiplexConnectome(G)
 
     if isinstance(layers, str):
-        return networkx_to_und_unwe_mat(C[layers])
+        return networkx_to_unwe_mat(C[layers], directed)
     else:
-        return networkx_to_und_unwe_mat(C.compose(*layers))
+        return networkx_to_unwe_mat(C.compose(*layers), directed)
 
 
 def get_spec_combinations():
@@ -155,9 +154,13 @@ def get_real_path(root, layers=permutations['layers'], source='ww', include_weak
 
 
 def make_control(source_adj_and_filepath):
-    source_adj, filepath = source_adj_and_filepath
-
-    np.save(filepath, bct.randmio_und(source_adj, SWAP_PROP)[0])
+    source_adj, filepath = source_adj_and_filepath[:2]
+    if len(source_adj_and_filepath) > 2:
+        directed = source_adj_and_filepath[2]
+    else:
+        directed = False
+    randomiser = bct.randmio_dir if directed else bct.randmio_und
+    np.save(filepath, randomiser(source_adj, SWAP_PROP)[0])
     print('  generating {}'.format(filepath))
     return True
 
@@ -169,17 +172,17 @@ def filename_iter(nreps=np.inf, ext='.npy'):
         i += 1
 
 
-def make_controls(source_adj, out_dir, n=REPS+1):
+def make_controls(source_adj, out_dir, n=REPS+1, directed=False):
     with mp.Pool() as p:
         set(p.imap_unordered(
             make_control,
-            ((source_adj.copy(), os.path.join(out_dir, filename)) for filename in filename_iter(n)),
+            ((source_adj.copy(), os.path.join(out_dir, filename), directed) for filename in filename_iter(n)),
             chunksize=int(n/mp.cpu_count())
         ))
 
 
 @push_exceptions
-def full_setup():
+def undi_combinations_setup():
     out_root = 'graphs'
     for comb in get_spec_combinations():
         print(comb)
@@ -193,5 +196,32 @@ def full_setup():
         make_controls(adj, control_dir)
 
 
+@push_exceptions
+def di_layers_setup():
+    out_root = os.path.join('graphs', 'di_layers')
+
+    # everything except gap junctions
+    di_layers = ['Synapse', 'Neuropeptide', 'Monoamine']
+    for layer_name in di_layers:
+        print(layer_name)
+        out_dir = os.path.join(out_root, abbreviations[layer_name])
+        controls_dir = os.path.join(out_dir, 'controls')
+        os.makedirs(controls_dir, exist_ok=True)
+        adj = get_original(layers=layer_name, source='ac', include_weak=False, directed=True)
+        np.save(os.path.join(out_dir, 'adj.npy'), adj)
+        make_controls(adj, controls_dir, directed=True)
+
+    # gap junctions
+    layer_name = 'GapJunction'
+    print(layer_name)
+    out_dir = os.path.join(out_root, abbreviations[layer_name])
+    controls_dir = os.path.join(out_dir, 'controls')
+    os.makedirs(controls_dir, exist_ok=True)
+    adj = get_original(layers=layer_name, source='ac', include_weak=False, directed=False)
+    np.save(os.path.join(out_dir, 'adj.npy'), adj)
+    make_controls(adj, controls_dir, directed=False)
+
+
 if __name__ == '__main__':
-    full_setup()
+    undi_combinations_setup()
+    di_layers_setup()
