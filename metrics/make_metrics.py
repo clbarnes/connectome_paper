@@ -38,6 +38,7 @@ def dump_metrics(adj, path, directed=False):
 
 
 def par_dump_metrics(adj_path):
+    print('generating metrics for {}'.format(adj_path))
     directed = 'di_layers' in adj_path
 
     adj = np.load(adj_path)
