@@ -11,18 +11,19 @@ except (ImportError, SystemError):
 
 set_seeds()
 
-def run_algos(adj):
+
+def run_algos(adj, directed=False):
     d = dict()
-    d['density'] = bct.density_und(adj)[0]
+    d['density'] = bct.density_dir(adj)[0] if directed else bct.density_und(adj)[0]
     charpath = bct.charpath(bct.distance_bin(adj))
     d['path_length'] = charpath[0]
     d['global_efficiency'] = charpath[1]
-    clustering = bct.clustering_coef_bu(adj)
+    clustering = bct.clustering_coef_bd(adj) if directed else bct.clustering_coef_bu(adj)
     d['mean_clustering'] = clustering.mean()
     d['clustering'] = list(clustering)
-    d['transitivity'] = bct.transitivity_bu(adj)
-    d['modularity'] = bct.modularity_und(adj)[1]
-    d['assortativity'] = bct.assortativity_bin(adj, 0)
+    d['transitivity'] = bct.transitivity_bd(adj) if directed else bct.transitivity_bu(adj)
+    d['modularity'] = bct.modularity_dir(adj)[1] if directed else bct.modularity_und(adj)[1]
+    d['assortativity'] = bct.assortativity_bin(adj, 3 if directed else 0)  # out-out degree correlation if directed
     betweenness_centrality = bct.betweenness_bin(adj)
     d['mean_betweenness_centrality'] = betweenness_centrality.mean()
     d['betweenness_centrality'] = list(betweenness_centrality)
@@ -31,15 +32,17 @@ def run_algos(adj):
     return d
 
 
-def dump_metrics(adj, path):
+def dump_metrics(adj, path, directed=False):
     with open(path, 'w') as f:
-        json.dump(run_algos(adj), f, indent=2, sort_keys=True)
+        json.dump(run_algos(adj, directed), f, indent=2, sort_keys=True)
 
 
 def par_dump_metrics(adj_path):
+    directed = 'di_layers' in adj_path
+
     adj = np.load(adj_path)
     out_path = adj_path[:-4] + '.json'
-    dump_metrics(adj, out_path)
+    dump_metrics(adj, out_path, directed)
     return True
 
 
@@ -113,6 +116,8 @@ def add_smallworld(*spec_dirs):
 def list_adj_paths(root):
     out = []
     for dirpath, dirnames, filenames in os.walk(root):
+        if 'di_layers' in dirpath and 'di_layers' not in root:
+            continue
         for filename in filenames:
             path = os.path.join(dirpath, filename)
             if path.endswith('.npy'):
@@ -133,8 +138,8 @@ def get_control_type_roots(root):
 
 @push_exceptions
 def main():
-    make_most_metrics('graphs')
-    add_smallworld(*get_control_type_roots('graphs'))
+    make_most_metrics('graphs/di_layers')
+    add_smallworld(*get_control_type_roots('graphs/di_layers'))
 
 
 if __name__ == "__main__":

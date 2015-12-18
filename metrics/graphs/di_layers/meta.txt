@@ -1,2 +1,6 @@
 AC only.
 Strong MAs only.
+
+gj graphs were randomised as undirected.
+
+Combined graphs are the combinations of randomised layers, NOT a single randomised graph.
