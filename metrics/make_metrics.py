@@ -21,7 +21,8 @@ def run_algos(adj, directed=False):
     clustering = bct.clustering_coef_bd(adj) if directed else bct.clustering_coef_bu(adj)
     d['mean_clustering'] = clustering.mean()
     d['clustering'] = list(clustering)
-    d['transitivity'] = bct.transitivity_bd(adj) if directed else bct.transitivity_bu(adj)
+    d['transitivity'] = bct.transitivity_bd(adj) if directed else bct.transitivity_bu(adj)  # nb in dir case,
+    # transitivity is 0 a lot
     d['modularity'] = bct.modularity_dir(adj)[1] if directed else bct.modularity_und(adj)[1]
     d['assortativity'] = bct.assortativity_bin(adj, 3 if directed else 0)  # out-out degree correlation if directed
     betweenness_centrality = bct.betweenness_bin(adj)

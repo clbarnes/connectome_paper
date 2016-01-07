@@ -4,6 +4,7 @@ import os
 import json
 from collections import Counter
 from itertools import chain
+import palettable
 try:
     from metrics.file_tools import filename_iter
     from metrics.shared import push_exceptions
@@ -11,10 +12,12 @@ except (ImportError, SystemError):
     from file_tools import filename_iter
     from shared import push_exceptions
 
+DIR = True
+DATA_ROOT = '/home/cbarnes/work/code/connectome/paper/metrics/graphs{}'.format('/di_layers' if DIR else '')
 
 plt.style.use('default')
 
-SPEC_NAMES = [
+SPEC_NAMES_UND = [
     'gj_ac',
     'gj_ww',
     'syn_ac',
@@ -34,14 +37,26 @@ SPEC_NAMES = [
     'gj-ma-np-syn_ww_str'
 ]
 
+SPEC_NAMES_DIR = [
+    'gj',
+    'syn',
+    'ma',
+    'np',
+    'gj-syn',
+    'gj-ma-syn',
+    'gj-ma-np-syn'
+]
 
-with open('colours.json') as f:
-    colours = json.load(f)
-colours = {spec_name: value for spec_name, (key, value) in zip(SPEC_NAMES, sorted(colours.items()))}
+if DIR:
+    col_list = palettable.colorbrewer.qualitative.Dark2_7.mpl_colors
+    colours = dict(zip(SPEC_NAMES_DIR, col_list))
+else:
+    with open('colours.json') as f:
+        colours = json.load(f)
+    colours = {spec_name: value for spec_name, (key, value) in zip(SPEC_NAMES_UND, sorted(colours.items()))}
+
 
 REPS = 100
-
-DATA_ROOT = '/home/cbarnes/work/code/connectome/paper/oo_attempt/graphs'
 
 
 def from_json(path, key):
@@ -58,7 +73,8 @@ def get_feature_for(metric_name, root):
     return real, control
 
 
-def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES, filename='complete.png', *args, **kwargs):
+def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES_UND, filename='complete.png', directed=False, *args,
+                **kwargs):
     fig, ax = plt.subplots()
 
     data = []
@@ -74,8 +90,10 @@ def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES, filename='complete.
     ax.set_title(metric_name)
     plt.tight_layout()
 
-    os.makedirs('plots/{}'.format(metric_name), exist_ok=True)
-    plt.savefig('plots/{}/{}'.format(metric_name, filename), dpi=140,
+    plots_root = 'plots/' if not directed else 'plots/di_layers/'
+
+    os.makedirs(plots_root + '{}'.format(metric_name), exist_ok=True)
+    plt.savefig(plots_root + '{}/{}'.format(metric_name, filename), dpi=140,
                 bbox_extra_artists=(lgd,) if lgd else None,
                 bbox_inches='tight')
     plt.close(fig)
@@ -151,19 +169,34 @@ def exclude_from_list(lst, *exclude_substrs):
 
 
 @push_exceptions
-def main():
+def main_und():
     for metric_name, plot_fn in PLOT_FNS.items():
         print('Generating ' + metric_name)
-        plot_metric(metric_name, plot_fn, SPEC_NAMES, filename='complete.png')
+        plot_metric(metric_name, plot_fn, SPEC_NAMES_UND, filename='complete.png')
 
         for not_phys_src in ['ac', 'ww']:
             print("excluding {}".format(not_phys_src))
 
             for not_ma_tp in ['wk', 'str']:
                 print('  excluding {}'.format(not_ma_tp))
-                spec_names = exclude_from_list(SPEC_NAMES, not_phys_src, not_ma_tp)
+                spec_names = exclude_from_list(SPEC_NAMES_UND, not_phys_src, not_ma_tp)
                 plot_metric(metric_name, plot_fn, spec_names,
                             filename='not-{}_not-{}.png'.format(not_phys_src, not_ma_tp))
 
+
+@push_exceptions
+def main_dir():
+    for metric_name, plot_fn in PLOT_FNS.items():
+        print('Generating ' + metric_name)
+        plot_metric(metric_name, plot_fn, SPEC_NAMES_DIR, directed=True, filename='complete.png')
+
+        print('  excluding np')
+        spec_names = exclude_from_list(SPEC_NAMES_DIR, 'np')
+        plot_metric(metric_name, plot_fn, spec_names, directed=True, filename='no-np.png')
+
+
 if __name__ == "__main__":
-    main()
+    if DIR:
+        main_dir()
+    else:
+        main_und()
