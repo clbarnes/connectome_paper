@@ -17,12 +17,11 @@ G = utl.json_deserialise(data_path)
 M = MultiplexConnectome(G, 'etype')
 whole = M['Monoamine']
 
-transmitters = sorted(set(data['transmitter'] for src, tgt, data in whole.edges_iter(data=True)))
+transmitters = set(data['transmitter'] for src, tgt, data in whole.edges_iter(data=True))
 
-col_dict = dict(zip(transmitters, cb.qualitative.Set1_4.mpl_colors))
+col_dict = dict(zip(sorted(transmitters), cb.qualitative.Set1_4.mpl_colors))
 
 H = HivePlot(whole,
-
              edge_category_colours=col_dict,
              config_path=CONF_PATH)
 H.draw()

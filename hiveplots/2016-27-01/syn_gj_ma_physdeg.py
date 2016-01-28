@@ -24,7 +24,11 @@ for node, data in whole.nodes_iter(data=True):
     data['physdeg'] = phys_degrees[node]
 
 
-col_dict = dict(zip(etypes, cb.qualitative.Dark2_4.mpl_colors))
+col_dict = {
+    key: value
+    for key, value in zip(sorted(etypes+ ['Neuropeptide']), cb.qualitative.Dark2_4.mpl_colors)
+    if key in etypes
+}
 
 H = HivePlot(whole,
              order_nodes_by='physdeg',

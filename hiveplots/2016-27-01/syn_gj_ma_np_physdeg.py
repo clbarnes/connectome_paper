@@ -24,12 +24,13 @@ for node, data in whole.nodes_iter(data=True):
     data['physdeg'] = phys_degrees[node]
 
 
-col_dict = dict(zip(etypes, cb.qualitative.Dark2_4.mpl_colors))
+col_dict = dict(zip(sorted(etypes), cb.qualitative.Dark2_4.mpl_colors))
 
 H = HivePlot(whole,
              order_nodes_by='physdeg',
              edge_category_colours=col_dict,
              config_path=CONF_PATH)
+
 H.draw()
 H.save_plot('./img/syn_gj_ma_np_physdeg.pdf'.format(source, weakness))
 H.dump_config(CONF_PATH)

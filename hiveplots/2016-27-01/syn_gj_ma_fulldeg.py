@@ -20,7 +20,11 @@ G = utl.json_deserialise(data_path)
 M = MultiplexConnectome(G, 'etype')
 whole = M.compose(*etypes)
 
-col_dict = dict(zip(etypes, cb.qualitative.Dark2_4.mpl_colors))
+col_dict = {
+    key: value
+    for key, value in zip(sorted(etypes + ['Neuropeptide']), cb.qualitative.Dark2_4.mpl_colors)
+    if key in etypes
+}
 
 H = HivePlot(whole,
              edge_category_colours=col_dict,
