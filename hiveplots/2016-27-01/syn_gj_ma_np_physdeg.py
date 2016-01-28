@@ -27,6 +27,7 @@ for node, data in whole.nodes_iter(data=True):
 col_dict = dict(zip(sorted(etypes), cb.qualitative.Dark2_4.mpl_colors))
 
 H = HivePlot(whole,
+             node_class_values=['interneuron', 'motor', 'sensory'],
              order_nodes_by='physdeg',
              edge_category_colours=col_dict,
              config_path=CONF_PATH)

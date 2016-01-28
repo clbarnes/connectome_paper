@@ -27,6 +27,7 @@ col_dict = {
 }
 
 H = HivePlot(whole,
+             node_class_values=['interneuron', 'motor', 'sensory'],
              edge_category_colours=col_dict,
              config_path=CONF_PATH)
 H.draw()

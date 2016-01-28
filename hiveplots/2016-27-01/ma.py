@@ -22,6 +22,7 @@ transmitters = set(data['transmitter'] for src, tgt, data in whole.edges_iter(da
 col_dict = dict(zip(sorted(transmitters), cb.qualitative.Set1_4.mpl_colors))
 
 H = HivePlot(whole,
+             node_class_values=['interneuron', 'motor', 'sensory'],
              edge_category_colours=col_dict,
              config_path=CONF_PATH)
 H.draw()

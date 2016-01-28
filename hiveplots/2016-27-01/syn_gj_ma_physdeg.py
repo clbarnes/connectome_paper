@@ -31,6 +31,7 @@ col_dict = {
 }
 
 H = HivePlot(whole,
+             node_class_values=['interneuron', 'motor', 'sensory'],
              order_nodes_by='physdeg',
              edge_category_colours=col_dict,
              config_path=CONF_PATH)
