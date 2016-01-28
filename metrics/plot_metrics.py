@@ -5,6 +5,7 @@ import json
 from collections import Counter
 from itertools import chain
 import palettable
+from scipy import stats
 try:
     from metrics.file_tools import filename_iter
     from metrics.shared import push_exceptions
@@ -39,16 +40,26 @@ SPEC_NAMES_UND = [
 
 SPEC_NAMES_DIR = [
     'gj',
-    'syn',
     'ma',
     'np',
+    'syn',
     'gj-syn',
     'gj-ma-syn',
     'gj-ma-np-syn'
 ]
 
+
+def colour_mean(*colours):
+    return np.mean(colours, axis=0)
+
+
 if DIR:
     col_list = palettable.colorbrewer.qualitative.Dark2_7.mpl_colors
+    # colours = dict(zip(sorted(SPEC_NAMES_DIR[:4]), col_list))
+    #
+    # colours['gj-syn'] = colour_mean(colours['gj'], colours['syn'])
+    # colours['gj-ma-syn'] = colour_mean(colours['gj'], colours['ma'], colours['syn'])
+    # colours['gj-ma-np-syn'] = colour_mean(colours['gj'], colours['ma'], colours['np'], colours['syn'])
     colours = dict(zip(SPEC_NAMES_DIR, col_list))
 else:
     with open('colours.json') as f:
@@ -87,6 +98,7 @@ def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES_UND, filename='compl
         }))
 
     lgd = plot_fn(ax, data, *args, **kwargs)
+    # plot_fn(ax, data, *args, **kwargs)
     ax.set_title(metric_name)
     plt.tight_layout()
 
@@ -99,10 +111,28 @@ def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES_UND, filename='compl
     plt.close(fig)
 
 
+def get_zscores(data):
+    reals_controls = zip([d['real'] for _, d in data], [d['control'] for _, d in data])
+    return [(real - np.mean(controls))/np.std(controls) for real, controls in reals_controls]
+
+
 def box_and_cross(ax, data):
-    ax.boxplot([d['control'] for _, d in data])
-    ax.scatter(range(1, len(data)+1), [d['real'] for _, d in data], color=[colours[metric_name] for metric_name,
-                                                                                                    _ in data])
+    boxes = ax.boxplot([d['control'] for _, d in data])
+    ax.scatter(
+            range(1, len(data)+1),
+            [d['real'] for _, d in data],
+            color=[colours[metric_name] for metric_name, _ in data]
+    )
+    scatters = [d['real'] for _, d in data]
+    OFFSET_PROP = 0.05
+    offset = abs(ax.get_ylim()[0] - ax.get_ylim()[1])*OFFSET_PROP
+    yvals_lst = [list(boxes['whiskers'][i].get_ydata()) + list(boxes['fliers'][i].get_ydata()) + [scatters[i]]
+                 for i in range(len(data))]
+    txt_coords = [(i, max(yvals) + offset) for i, yvals in enumerate(yvals_lst, start=1)]
+    pvals = stats.norm.sf([abs(val) for val in get_zscores(data)])*2  # 2-sided
+    strs = ['p={:.2e}'.format(val) for val in pvals]
+    for s, (x, y) in zip(strs, txt_coords):
+        ax.text(x, y, s, horizontalalignment='center', verticalalignment='bottom', fontsize=8)
     ax.set_xticklabels([spec_name for spec_name, _ in data], rotation=90)
 
 

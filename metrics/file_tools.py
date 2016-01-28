@@ -257,5 +257,5 @@ def di_combinations_from_layers():
 
 
 if __name__ == '__main__':
-    undi_combinations_setup()
+    # undi_combinations_setup()
     di_layers_setup()
