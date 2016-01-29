@@ -1,0 +1,18 @@
+assortativity:
+- p-values are actually meaningful rather than just being minuscule
+- All graphs are generally disassortative, but generally more assortative than controls (except gap junction)
+- MA and NP networks are much less assortative than the physical graphs, but the real networks are significantly more
+ assortative than the null models: i.e. despite the fact that there is a great deal of broadcasting to
+ low-degree nodes, there is much more communication between hubs than expected. Possibly suggestive of coordinating
+ gross body state?
+
+betweenness_centrality
+clustering
+degrees
+density
+global_efficiency
+mean_betweenness_centrality
+mean_clustering
+modularity
+path_length
+transitivity
