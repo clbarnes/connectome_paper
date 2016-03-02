@@ -919,5 +919,6 @@
   "modularity": 0.1414775577422398,
   "path_length": 3.5845903088568427,
   "small_worldness": 0.9517943305812446,
-  "transitivity": 0.0
+  "transitivity": 0.0,
+  "weighted_mean_clustering": 0.04271006749576523
 }

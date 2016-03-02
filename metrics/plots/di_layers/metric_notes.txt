@@ -1,3 +1,10 @@
+NB:
+Line graphs show survival functions, i.e. y = proportion of nodes whose metric value >= x
+    A y-intercept < 1 signifies a number of nodes whose value = 0
+    Be aware of inconsistent lin/log scales between metrics (the result of some experimentation of what looks best)
+Box plot/ scatters show the distribution of null graphs in the box+whisker, and the scatter point shows the real value
+The bar graph is a bar graph :)
+
 assortativity:
 - p-values are actually meaningful rather than just being minuscule
 - All graphs are generally disassortative, but generally more assortative than controls (except gap junction)
@@ -6,13 +13,55 @@ assortativity:
  low-degree nodes, there is much more communication between hubs than expected. Possibly suggestive of coordinating
  gross body state?
 
-betweenness_centrality
-clustering
-degrees
-density
-global_efficiency
-mean_betweenness_centrality
-mean_clustering
-modularity
-path_length
-transitivity
+betweenness_centrality:
+- I'm not really sure how to interpret this!
+
+mean_betweenness_centrality:
+- MA presumably has a very low proportion of node pairs connected by a path longer than 1, which is why its box looks so
+ odd
+
+clustering:
+- Nodewise clustering coefficient
+- Very busy!
+- Generally, real curves are shifted significantly right of the null graphs (i.e. real graph nodes are more highly
+clustered than null graph nodes)
+- MA lines cross because while fewer real nodes participate in any sort of cluster, there is a much than expected
+number of highly-clustered nodes
+
+mean_clustering:
+- p-values are important because mean clustering will increase with density
+- Collapsing nodewise clustering coefficient into a single value loses the interesting MA behaviour noted above
+- Other than that, generally consistent with what's seen in the survival plots
+
+degrees:
+- This is a sanity check to see how many edges we lose/gain by stacking randomised layers rather than randomising a
+whole graph (or rather, how it affects the degree distribution)
+- For single-layer graphs, the null and real lines completely overlap (necessarily)
+- The lines for combined graphs are generally fairly close (reassuring)
+    - Exception is gj-syn: because these networks have a fairly high redundancy in the real network but not in the nulls
+    - Conversely, the fact that the other lines are close suggests that randomising them does not change the extent of
+    redundancy (i.e. they probably weren't very redundant to begin with, or the degree distribution makes redundancy
+    inevitable)
+
+density:
+- Not much to interpret but worth noting because of how it affects the other metrics
+    - I suppose it might be worth representing this as the box/scatter to show the effect of the randomisation
+    protocol on number of edges
+- Combined graph density is not the sum of its components' densities, due to redundancy
+
+path_length:
+- Mean length of shortest path *between each connected pair of nodes*
+    - MA has a comparably large p-value because not that many nodes are connected (possibly NP as well)
+    - This is why combined graphs seem to have a longer mean path length than, e.g. MA (more connected nodes)
+- Exceedingly small p-values (some smaller than double precision i.e. 2.23x10^(-308), which is a bit of a pain)
+- Paths are longer than null in order to allow separate channels of information - can't do processing if all the
+circuits are shorted (i.e. complete graph)
+
+global_efficiency:
+- I don't think this metric adds much value if we're including path length, and path length is more intuitive
+
+modularity:
+- All real graphs are much more modular than null models
+    - In particular, combined physical is more modular than its components where expectation is less modular than
+    components
+- Addition of neuropeptides significantly increases modularity over gj+syn+ma
