@@ -17,8 +17,13 @@ DIR = True
 DATA_ROOT = '/home/cbarnes/work/code/connectome/paper/metrics/graphs{}'.format('/di_layers' if DIR else '')
 
 TITLE_SIZE = 25
-XTICKLABEL_SIZE = 20
+XTICKLABEL_SIZE = 25
+YLABEL_SIZE = 25
+XLABEL_SIZE = 25
 PVALUE_SIZE = 12
+
+# XTICKLABEL_KWARGS = {'rotation': 45, 'ha': 'right'}
+XTICKLABEL_KWARGS = {}
 
 plt.style.use('default')
 
@@ -98,8 +103,8 @@ def get_feature_for(metric_name, root):
     return real, control
 
 
-def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES_UND, filename='complete.png', directed=False, *args,
-                **kwargs):
+def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES_UND, filename='complete.png', directed=True,
+                title=False, *args, **kwargs):
     fig, ax = plt.subplots()
 
     data = []
@@ -113,7 +118,23 @@ def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES_UND, filename='compl
 
     lgd = plot_fn(ax, data, *args, **kwargs)
     # plot_fn(ax, data, *args, **kwargs)
-    ax.set_title(PLOT_TITLES[metric_name], fontsize=TITLE_SIZE)
+    if title:
+        ax.set_title(PLOT_TITLES[metric_name], fontsize=TITLE_SIZE)
+
+    if plot_fn in (scatter_and_cross, bars):
+        plt.ylabel(PLOT_TITLES[metric_name].lower(), fontsize=YLABEL_SIZE)
+    elif plot_fn == survival:  # loglog
+        plt.xlabel(PLOT_TITLES[metric_name].lower() + ' (log)', fontsize=XLABEL_SIZE)
+        plt.ylabel('survival function (log)', fontsize=YLABEL_SIZE)
+    elif plot_fn == survival_linlin:
+        plt.xlabel(PLOT_TITLES[metric_name].lower(), fontsize=XLABEL_SIZE)
+        plt.ylabel('survival function', fontsize=YLABEL_SIZE)
+    elif plot_fn == survival_loglin:
+        plt.xlabel(PLOT_TITLES[metric_name].lower() + ' (log)', fontsize=XLABEL_SIZE)
+        plt.ylabel('survival function', fontsize=YLABEL_SIZE)
+    else:
+        raise ValueError('Unknown plot type for x/y labels')
+
     plt.tight_layout()
 
     plots_root = 'plots/' if not directed else 'plots/di_layers/'
@@ -155,14 +176,14 @@ def box_and_cross(ax, data):
     strs = ['p={:.2e}'.format(val) for val in pvals]
     for s, (x, y) in zip(strs, txt_coords):
         ax.text(x, y, s, horizontalalignment='center', verticalalignment='bottom', fontsize=PVALUE_SIZE)
-    ax.set_xticklabels([SPEC_LABELS[spec_name] for spec_name, _ in data], rotation=90, fontsize=XTICKLABEL_SIZE)
+    ax.set_xticklabels([SPEC_LABELS[spec_name] for spec_name, _ in data], fontsize=XTICKLABEL_SIZE, **XTICKLABEL_KWARGS)
 
 
-def scatter_and_cross(ax, data):
+def scatter_and_cross(ax, data, pvals=False):
     SCATTER_SPREAD = 0.05
     maxes = []
     xticklabels = ['']
-    strs = data_to_pval_strs(data)
+
     for x, (name, this_data) in enumerate(data, 1):
         controls = this_data['control']
         xticklabels.append(SPEC_LABELS[name])
@@ -171,15 +192,18 @@ def scatter_and_cross(ax, data):
         xs = np.random.normal(loc=x, scale=SCATTER_SPREAD, size=len(controls))
         ax.scatter(xs, controls, facecolor=colours[name], lw=0, alpha=0.3, marker='o', s=25)
         ax.scatter(x, this_data['real'], facecolor=colours[name], marker='D', s=35)
+
         maxes.append(max(this_data['real'], max(controls)))
 
-    OFFSET_PROP = 0.05
-    offset = abs(ax.get_ylim()[0] - ax.get_ylim()[1])*OFFSET_PROP
+    if pvals:
+        strs = data_to_pval_strs(data)
+        OFFSET_PROP = 0.05
+        offset = abs(ax.get_ylim()[0] - ax.get_ylim()[1])*OFFSET_PROP
 
-    for x, (max_, s) in enumerate(zip(maxes, strs), 1):
-        ax.text(x, max_ + offset, s, horizontalalignment='center', verticalalignment='bottom', fontsize=PVALUE_SIZE)
+        for x, (max_, s) in enumerate(zip(maxes, strs), 1):
+            ax.text(x, max_ + offset, s, horizontalalignment='center', verticalalignment='bottom', fontsize=PVALUE_SIZE)
 
-    ax.set_xticklabels(xticklabels, rotation=90, fontsize=XTICKLABEL_SIZE)
+    ax.set_xticklabels(xticklabels, fontsize=XTICKLABEL_SIZE, **XTICKLABEL_KWARGS)
 
 
 def bars(ax, data):
@@ -191,7 +215,7 @@ def bars(ax, data):
     for i, (spec_name, _) in enumerate(data):
         barlist[i].set_color(colours[spec_name])
     ax.set_xticks(ax.get_xticks()+width/2)
-    ax.set_xticklabels([SPEC_LABELS[spec_name] for spec_name, _ in data], rotation=90, fontsize=XTICKLABEL_SIZE)
+    ax.set_xticklabels([SPEC_LABELS[spec_name] for spec_name, _ in data], fontsize=XTICKLABEL_SIZE, **XTICKLABEL_KWARGS)
 
 
 def surv(lst):
@@ -222,6 +246,15 @@ def survival(ax, data, log=(True, True)):
     return ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 
+def survival_linlin(ax, data):
+    return survival(ax, data, (False, False))
+
+
+def survival_loglin(ax, data):
+    return survival(ax, data, (False, False))
+
+
+
 PLOT_FNS = {
     'density': bars,
     'degrees': survival,
@@ -229,29 +262,29 @@ PLOT_FNS = {
     'global_efficiency': scatter_and_cross,
     'mean_clustering': scatter_and_cross,
     'weighted_mean_clustering': scatter_and_cross,
-    'clustering': lambda ax, data: survival(ax, data, (False, False)),
+    'clustering': survival_linlin,
     'transitivity': scatter_and_cross,
     'modularity': scatter_and_cross,
     'assortativity': scatter_and_cross,
     'small_worldness': scatter_and_cross,
     'mean_betweenness_centrality': scatter_and_cross,
-    'betweenness_centrality': lambda ax, data: survival(ax, data, (True, False))
+    'betweenness_centrality': survival_loglin
 }
 
 PLOT_TITLES = {
     'density': 'Density',
-    'degrees': 'Degree survival function',
+    'degrees': 'Degree',
     'path_length': 'Characteristic path length',
     'global_efficiency': 'Global efficiency',
     'mean_clustering': 'Mean nodewise clustering coefficient',
     'weighted_mean_clustering': 'Weighted mean nodewise clustering coefficient',
-    'clustering': 'Nodewise clustering coefficient survival function',
+    'clustering': 'Nodewise clustering coefficient',
     'transitivity': 'Transitivity',
     'modularity': 'Maximum modularity',
     'assortativity': 'Assortativity',
     'small_worldness': 'Small world coefficient',
     'mean_betweenness_centrality': 'Mean betweenness centrality',
-    'betweenness_centrality': 'Betweenness centrality survival function'
+    'betweenness_centrality': 'Betweenness centrality'
 }
 
 
