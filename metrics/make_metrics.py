@@ -15,12 +15,12 @@ set_seeds()
 def run_algos(adj, directed=False):
     d = dict()
     d['density'] = bct.density_dir(adj)[0] if directed else bct.density_und(adj)[0]
-    charpath = bct.charpath(bct.distance_bin(adj))
+    charpath = bct.charpath(bct.distance_bin(adj), include_infinite=False)
     d['path_length'] = charpath[0]
     d['global_efficiency'] = charpath[1]
     clustering = bct.clustering_coef_bd(adj) if directed else bct.clustering_coef_bu(adj)
     d['mean_clustering'] = clustering.mean()
-    d['weighted_mean_clustering'] = np.average(clustering, weights=(adj + adj.T).sum(axis=1))[0],
+    d['weighted_mean_clustering'] = np.average(clustering, weights=(adj + adj.T).sum(axis=1)),
     d['clustering'] = list(clustering)
     d['transitivity'] = bct.transitivity_bd(adj) if directed else bct.transitivity_bu(adj)  # nb in dir case,
     # transitivity is 0 a lot
@@ -142,6 +142,7 @@ def get_control_type_roots(root):
 @push_exceptions
 def main():
     make_most_metrics('graphs/di_layers')
+    add_smallworld(*get_control_type_roots('graphs/di_layers'))
     add_smallworld(*get_control_type_roots('graphs/di_layers'))
 
 

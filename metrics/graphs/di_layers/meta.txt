@@ -4,3 +4,5 @@ Strong MAs only.
 gj graphs were randomised as undirected.
 
 Combined graphs are the combinations of randomised layers, NOT a single randomised graph.
+
+EXCEPT gj-ma-syn2, which is the combination of unrandomised gj-syn and the randomised ma

@@ -196,6 +196,33 @@ def undi_combinations_setup():
         make_controls(adj, control_dir)
 
 
+def sanitise_adj(adj):
+    """
+    Binarise and remote self-loops
+    """
+    binarised = (adj > 0.5).astype(int)
+    return binarised * (1-np.eye(*adj.shape))
+
+
+def gj_ma_syn2():
+    """
+    Real GJ + Syn plus control MA
+    """
+    root = os.path.join('graphs', 'di_layers')
+
+    real_phys = np.load(os.path.join(root, 'gj-syn', 'adj.npy'))
+    real_ma = np.load(os.path.join(root, 'ma', 'adj.npy'))
+
+    out_root = os.path.join(root, 'gj-ma-syn2')
+    np.save(os.path.join(out_root, 'adj.npy'), sanitise_adj(real_phys + real_ma))
+
+    control_root = os.path.join(out_root, 'controls')
+
+    for fname in filename_iter(REPS+1):
+        control_ma = np.load(os.path.join(root, 'ma', 'controls', fname))
+        np.save(os.path.join(control_root, fname), sanitise_adj(real_phys + control_ma))
+
+
 @push_exceptions
 def di_layers_setup():
     out_root = os.path.join('graphs', 'di_layers')
@@ -255,7 +282,10 @@ def di_combinations_from_layers():
             )
             np.save(os.path.join(control_dir, filename), adj)
 
+    gj_ma_syn2()
+
 
 if __name__ == '__main__':
     # undi_combinations_setup()
     di_layers_setup()
+    # gj_ma_syn2()

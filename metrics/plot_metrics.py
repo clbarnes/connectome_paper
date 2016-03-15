@@ -111,7 +111,7 @@ def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES_UND, filename='compl
 
     for spec_name in spec_names:
         real, control = get_feature_for(metric_name, os.path.join(DATA_ROOT, spec_name))
-        data.append((spec_name, {
+        data.append((spec_name if not spec_name.endswith('2') else spec_name[:-1], {
             'real': real,
             'control': control
         }))
@@ -121,7 +121,7 @@ def plot_metric(metric_name, plot_fn, spec_names=SPEC_NAMES_UND, filename='compl
     if title:
         ax.set_title(PLOT_TITLES[metric_name], fontsize=TITLE_SIZE)
 
-    if plot_fn in (scatter_and_cross, bars):
+    if plot_fn in (scatter_and_cross, box_and_cross, bars):
         plt.ylabel(PLOT_TITLES[metric_name].lower(), fontsize=YLABEL_SIZE)
     elif plot_fn == survival:  # loglog
         plt.xlabel(PLOT_TITLES[metric_name].lower() + ' (log)', fontsize=XLABEL_SIZE)
@@ -159,23 +159,28 @@ def data_to_pval_strs(data):
     return ['p={:.2e}'.format(val) for val in pvals]
 
 
-def box_and_cross(ax, data):
+def box_and_cross(ax, data, pvals=False):
     boxes = ax.boxplot([d['control'] for _, d in data])
     ax.scatter(
-            range(1, len(data)+1),
-            [d['real'] for _, d in data],
-            color=[colours[datum_name] for datum_name, _ in data]
+        range(1, len(data)+1),
+        [d['real'] for _, d in data],
+        color=[colours[datum_name] for datum_name, _ in data],
+        s=35
     )
-    scatters = [d['real'] for _, d in data]
-    OFFSET_PROP = 0.05
-    offset = abs(ax.get_ylim()[0] - ax.get_ylim()[1])*OFFSET_PROP
-    yvals_lst = [list(boxes['whiskers'][i].get_ydata()) + list(boxes['fliers'][i].get_ydata()) + [scatters[i]]
-                 for i in range(len(data))]
-    txt_coords = [(i, max(yvals) + offset) for i, yvals in enumerate(yvals_lst, start=1)]
-    pvals = stats.norm.sf([abs(val) for val in get_zscores(data)])*2  # 2-sided
-    strs = ['p={:.2e}'.format(val) for val in pvals]
-    for s, (x, y) in zip(strs, txt_coords):
-        ax.text(x, y, s, horizontalalignment='center', verticalalignment='bottom', fontsize=PVALUE_SIZE)
+
+    if pvals:
+        OFFSET_PROP = 0.05
+        offset = abs(ax.get_ylim()[0] - ax.get_ylim()[1])*OFFSET_PROP
+        scatters = [d['real'] for _, d in data]
+        yvals_lst = [list(boxes['whiskers'][i].get_ydata()) + list(boxes['fliers'][i].get_ydata()) + [scatters[i]]
+                     for i in range(len(data))]
+        txt_coords = [(i, max(yvals) + offset) for i, yvals in enumerate(yvals_lst, start=1)]
+        pvals = stats.norm.sf([abs(val) for val in get_zscores(data)])*2  # 2-sided
+        strs = ['p={:.2e}'.format(val) for val in pvals]
+
+        for s, (x, y) in zip(strs, txt_coords):
+            ax.text(x, y, s, horizontalalignment='center', verticalalignment='bottom', fontsize=PVALUE_SIZE)
+
     ax.set_xticklabels([SPEC_LABELS[spec_name] for spec_name, _ in data], fontsize=XTICKLABEL_SIZE, **XTICKLABEL_KWARGS)
 
 
@@ -251,23 +256,22 @@ def survival_linlin(ax, data):
 
 
 def survival_loglin(ax, data):
-    return survival(ax, data, (False, False))
-
+    return survival(ax, data, (True, False))
 
 
 PLOT_FNS = {
     'density': bars,
     'degrees': survival,
-    'path_length': scatter_and_cross,
-    'global_efficiency': scatter_and_cross,
-    'mean_clustering': scatter_and_cross,
-    'weighted_mean_clustering': scatter_and_cross,
+    'path_length': box_and_cross,
+    'global_efficiency': box_and_cross,
+    'mean_clustering': box_and_cross,
+    'weighted_mean_clustering': box_and_cross,
     'clustering': survival_linlin,
-    'transitivity': scatter_and_cross,
-    'modularity': scatter_and_cross,
-    'assortativity': scatter_and_cross,
-    'small_worldness': scatter_and_cross,
-    'mean_betweenness_centrality': scatter_and_cross,
+    'transitivity': box_and_cross,
+    'modularity': box_and_cross,
+    'assortativity': box_and_cross,
+    'small_worldness': box_and_cross,
+    'mean_betweenness_centrality': box_and_cross,
     'betweenness_centrality': survival_loglin
 }
 
@@ -286,6 +290,19 @@ PLOT_TITLES = {
     'mean_betweenness_centrality': 'Mean betweenness centrality',
     'betweenness_centrality': 'Betweenness centrality'
 }
+
+IMPORTANT_METRICS = [
+    'degrees',
+    'path_length',
+    'small_worldness',
+    'modularity',
+    'assortativity'
+]
+
+
+def gj_ma_syn2():
+    for metric, plot_fns in PLOT_FNS.items():
+        plot_metric(metric, plot_fns, spec_names=['gj-ma-syn2'], filename='real-phys_rand-ma.png')
 
 
 def exclude_from_list(lst, *exclude_substrs):
@@ -321,9 +338,12 @@ def main_dir():
         spec_names = exclude_from_list(SPEC_NAMES_DIR, 'np')
         plot_metric(metric_name, plot_fn, spec_names, directed=True, filename='no-np.png')
 
+    gj_ma_syn2()
+
 
 if __name__ == "__main__":
     if DIR:
         main_dir()
+
     else:
         main_und()
