@@ -143,7 +143,7 @@ def get_control_type_roots(root):
 def main():
     make_most_metrics('graphs/di_layers')
     add_smallworld(*get_control_type_roots('graphs/di_layers'))
-    add_smallworld(*get_control_type_roots('graphs/di_layers'))
+    # add_smallworld(*get_control_type_roots('graphs/di_layers'))
 
 
 if __name__ == "__main__":

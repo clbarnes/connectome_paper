@@ -80,8 +80,6 @@ def data_to_pval_strs(data):
     return ['p={:.2e}'.format(val) for val in pvals]
 
 
-# todo: compute with label-shuffled adj?
-
 if __name__ == "__main__":
     real_prop = get_real_prop()
     rand_prop, rand_std = get_random_prop(std=True)
@@ -95,4 +93,4 @@ rand_prop: {rand_prop}, p = {rand_pval}
 null_prop: {null_prop}, p = {null_pval}
 '''.format(**locals()))
 
-    print(len(np.unique(struc)))
+    print('There are {} modules in the phys network'.format(len(np.unique(struc))))
