@@ -160,7 +160,7 @@ def make_control(source_adj_and_filepath):
     else:
         directed = False
     randomiser = bct.randmio_dir if directed else bct.randmio_und
-    np.save(filepath, randomiser(source_adj, SWAP_PROP)[0])
+    np.save(filepath, sanitise_adj(randomiser(source_adj, SWAP_PROP)[0]))
     print('  generating {}'.format(filepath))
     return True
 
@@ -235,7 +235,7 @@ def di_layers_setup():
         controls_dir = os.path.join(out_dir, 'controls')
         os.makedirs(controls_dir, exist_ok=True)
         adj = get_original(layers=layer_name, source='ac', include_weak=False, directed=True)
-        np.save(os.path.join(out_dir, 'adj.npy'), adj)
+        np.save(os.path.join(out_dir, 'adj.npy'), sanitise_adj(adj))
         make_controls(adj, controls_dir, directed=True)
 
     # gap junctions
@@ -245,7 +245,7 @@ def di_layers_setup():
     controls_dir = os.path.join(out_dir, 'controls')
     os.makedirs(controls_dir, exist_ok=True)
     adj = get_original(layers=layer_name, source='ac', include_weak=False, directed=False)
-    np.save(os.path.join(out_dir, 'adj.npy'), adj)
+    np.save(os.path.join(out_dir, 'adj.npy'), sanitise_adj(adj))
     make_controls(adj, controls_dir, directed=False)
 
     # combinations
@@ -273,14 +273,14 @@ def di_combinations_from_layers():
         os.makedirs(control_dir, exist_ok=True)
 
         real_adj = collapse_list_of_arrays([np.load(os.path.join(out_root, layer, 'adj.npy')) for layer in combination])
-        np.save(os.path.join(out_dir, 'adj.npy'), real_adj)
+        np.save(os.path.join(out_dir, 'adj.npy'), sanitise_adj(real_adj))
 
         for filename in filename_iter(REPS+1):
             print('  generating {}'.format(filename))
             adj = collapse_list_of_arrays(
                     [np.load(os.path.join(out_root, layer, 'controls', filename)) for layer in combination]
             )
-            np.save(os.path.join(control_dir, filename), adj)
+            np.save(os.path.join(control_dir, filename), sanitise_adj(adj))
 
     gj_ma_syn2()
 
