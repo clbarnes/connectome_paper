@@ -20,7 +20,7 @@ def run_algos(adj, directed=False):
     d['global_efficiency'] = charpath[1]
     clustering = bct.clustering_coef_bd(adj) if directed else bct.clustering_coef_bu(adj)
     d['mean_clustering'] = clustering.mean()
-    d['weighted_mean_clustering'] = np.average(clustering, weights=(adj + adj.T).sum(axis=1))[0],
+    d['weighted_mean_clustering'] = np.average(clustering, weights=(adj + adj.T).sum(axis=1)),
     d['clustering'] = list(clustering)
     d['transitivity'] = bct.transitivity_bd(adj) if directed else bct.transitivity_bu(adj)  # nb in dir case,
     # transitivity is 0 a lot
@@ -129,11 +129,13 @@ def list_adj_paths(root):
     return out
 
 
-def make_most_metrics(root='graphs'):
+def make_most_metrics(root='graphs', parallel=True):
     adj_paths = list_adj_paths(root)
-    with mp.Pool() as p:
-        set(p.imap_unordered(par_dump_metrics, adj_paths, chunksize=int(len(adj_paths) / mp.cpu_count())))
-
+    if parallel:
+        with mp.Pool() as p:
+            set(p.imap_unordered(par_dump_metrics, adj_paths, chunksize=int(len(adj_paths) / mp.cpu_count())))
+    else:
+        set(map(par_dump_metrics, adj_paths))
 
 def get_control_type_roots(root):
     return [os.path.join(root, dirn) for dirn in os.listdir(root) if os.path.isdir(os.path.join(root, dirn))]

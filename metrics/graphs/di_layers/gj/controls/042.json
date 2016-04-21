@@ -920,5 +920,7 @@
   "path_length": 3.6688188801068686,
   "small_worldness": 1.0119103215309633,
   "transitivity": 0.0,
-  "weighted_mean_clustering": 0.047879528636729965
+  "weighted_mean_clustering": [
+    0.047879528636729965
+  ]
 }
