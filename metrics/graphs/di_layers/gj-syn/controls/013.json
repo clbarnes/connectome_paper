@@ -913,12 +913,12 @@
     2.0
   ],
   "density": 0.03692988053068139,
-  "global_efficiency": 0.3991092971918477,
+  "global_efficiency": 0.4154861294029173,
   "mean_betweenness_centrality": 467.67218543046357,
   "mean_clustering": 0.07840088911857754,
   "modularity": 0.14586063613225456,
-  "path_length": Infinity,
-  "small_worldness": NaN,
+  "path_length": 2.6174830220226983,
+  "small_worldness": 1.0263753705941183,
   "transitivity": 0.06912803665923153,
   "weighted_mean_clustering": [
     0.07530608538122043
