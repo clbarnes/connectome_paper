@@ -6,6 +6,7 @@ import connectome_utils as utl
 from multiplex import MultiplexConnectome
 from hiveplotter import HivePlot
 from palettable import colorbrewer as cb
+import pyx
 
 CONF_PATH = 'config/syn_gj_ma_fulldeg.ini'
 
@@ -20,15 +21,23 @@ G = utl.json_deserialise(data_path)
 M = MultiplexConnectome(G, 'etype')
 whole = M.compose(*etypes)
 
+# col_dict = {
+#     key: value
+#     for key, value in zip(sorted(etypes + ['Neuropeptide']), cb.qualitative.Dark2_4.mpl_colors)
+#     if key in etypes
+# }
+
 col_dict = {
-    key: value
-    for key, value in zip(sorted(etypes + ['Neuropeptide']), cb.qualitative.Dark2_4.mpl_colors)
-    if key in etypes
+    'Synapse': (1, 0, 1),
+    'GapJunction': (0, 0, 1),
+    'Monoamine': (0, 1, 0),
 }
 
 H = HivePlot(whole,
              node_class_values=['interneuron', 'motor', 'sensory'],
              edge_category_colours=col_dict,
+             edge_alpha=1,
+             edge_thickness_range=[0.03, 0.03],
              config_path=CONF_PATH)
 H.draw()
 H.save_plot('./img/syn_gj_ma_fulldeg.pdf'.format(source, weakness))
