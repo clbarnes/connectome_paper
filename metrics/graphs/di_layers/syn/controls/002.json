@@ -916,10 +916,10 @@
   "global_efficiency": 0.3002588868598417,
   "mean_betweenness_centrality": 488.4768211920529,
   "mean_clustering": 0.052565649789818175,
-  "modularity": 0.16212589060884983,
-  "path_length": 2.982173392037269,
-  "small_worldness": 1.0975890861125865,
-  "transitivity": 0.0,
+  "modularity": 0.16342193159755983,
+  "path_length": Infinity,
+  "small_worldness": NaN,
+  "transitivity": 0.046875,
   "weighted_mean_clustering": [
     0.05085924871862641
   ]

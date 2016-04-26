@@ -917,9 +917,9 @@
   "mean_betweenness_centrality": 71.83443708609272,
   "mean_clustering": 0.260779139361906,
   "modularity": 0.2620693668423039,
-  "path_length": 1.8048156508653124,
-  "small_worldness": 1.1568910098123395,
-  "transitivity": 0.0,
+  "path_length": Infinity,
+  "small_worldness": NaN,
+  "transitivity": 0.34148922510172725,
   "weighted_mean_clustering": [
     0.3487439934634885
   ]
