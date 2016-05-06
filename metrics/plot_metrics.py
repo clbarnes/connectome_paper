@@ -48,23 +48,23 @@ SPEC_NAMES_UND = [
 ]
 
 SPEC_NAMES_DIR = [
-    'gj',
     'syn',
-    'ma',
-    'np',
+    'gj',
     'gj-syn',
+    'ma',
     'gj-ma-syn',
+    'np',
     'gj-ma-np-syn'
 ]
 
 SPEC_LABELS = {
-    'gj': 'GJ',
-    'syn': 'Syn.',
+    'gj': 'Gap',
+    'syn': 'Syn',
     'ma': 'MA',
     'np': 'NP',
-    'gj-syn': 'Phys.',
-    'gj-ma-syn': 'Aggr.',
-    'gj-ma-np-syn': 'Aggr.\nw/ NP'
+    'gj-syn': 'Wired',
+    'gj-ma-syn': 'All',
+    'gj-ma-np-syn': 'All\nw/ NP'
 }
 
 
