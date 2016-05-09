@@ -11,6 +11,7 @@ except (ImportError, SystemError):
 
 set_seeds()
 
+SMALLWORLD_CLUSTERING = 'transitivity'  # could use
 
 def run_algos(adj, directed=False):
     d = dict()
@@ -25,7 +26,7 @@ def run_algos(adj, directed=False):
     d['transitivity'] = bct.transitivity_bd(adj) if directed else bct.transitivity_bu(adj)  # nb in dir case,
     # transitivity is 0 a lot
     d['modularity'] = bct.modularity_dir(adj)[1] if directed else bct.modularity_und(adj)[1]
-    d['assortativity'] = bct.assortativity_bin(adj, 3 if directed else 0)  # out-out degree correlation if directed
+    d['assortativity'] = bct.assortativity_bin(adj + adj.T, 0)  # out-out degree correlation if directed
     betweenness_centrality = bct.betweenness_bin(adj)
     d['mean_betweenness_centrality'] = betweenness_centrality.mean()
     d['betweenness_centrality'] = list(betweenness_centrality)
@@ -97,17 +98,17 @@ def add_smallworld(*spec_dirs):
         print('Generating small-worldness for {}'.format(spec_dir))
         real_path = os.path.join(spec_dir, 'adj.json')
         control_dir = os.path.join(spec_dir, 'controls')
-        C_lambda = get_from_jsons_in_dir(['mean_clustering', 'path_length'], control_dir)
+        C_lambda = get_from_jsons_in_dir([SMALLWORLD_CLUSTERING, 'path_length'], control_dir)
         print('    controls')
-        Ss = get_small_worldnesses(C_lambda['mean_clustering'], C_lambda['path_length'])
+        Ss = get_small_worldnesses(C_lambda[SMALLWORLD_CLUSTERING], C_lambda['path_length'])
         for val, json_name in zip(
                 Ss,
                 (filename for filename in sorted(os.listdir(control_dir)) if filename.endswith('.json'))
         ):
             add_to_json('small_worldness', val, os.path.join(control_dir, json_name))
 
-        real_clustering, real_pathlength = get_from_json(['mean_clustering', 'path_length'], real_path)
-        rand_clustering = mean_except(C_lambda['mean_clustering'], 100)
+        real_clustering, real_pathlength = get_from_json([SMALLWORLD_CLUSTERING, 'path_length'], real_path)
+        rand_clustering = mean_except(C_lambda[SMALLWORLD_CLUSTERING], 100)
         rand_pathlength = mean_except(C_lambda['path_length'], 100)
 
         print('    real')
