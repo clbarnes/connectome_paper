@@ -25,9 +25,9 @@ graph_names = [
     ('gj-syn', 'Wired'),
     ('ma', 'MA'),
     ('gj-ma-syn', 'All'),
+    ('gj-ma-syn2', 'All (real wired + null MA)'),
     ('np', 'NP'),
     ('gj-ma-np-syn', 'All w/ NP'),
-    ('gj-ma-syn2', 'All (real wired + null MA)')
 ]
 
 cols = ['real'] + ['null_{:02.0f}'.format(i) for i in range(100)]
