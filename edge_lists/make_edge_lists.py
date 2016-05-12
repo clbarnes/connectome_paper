@@ -1,9 +1,14 @@
-import connectome_utils as utl
-from multiplex import MultiplexConnectome
 import csv
 
 
-DATA = '/home/cbarnes/work/code/connectome/construct2/combine/tgt_data/strong_only/ac/complete.json'
+DATA = {
+    'monoamine': '/home/cbarnes/work/code/connectome/construct2/extrasyn/tgt_data/'
+                 'ma_edgelist.csv',
+    'monoamine_including_weak': '/home/cbarnes/work/code/connectome/construct2/extrasyn/tgt_data/'
+                                'ma_edgelist_include-weak.csv',
+    'neuropeptide': '/home/cbarnes/work/code/connectome/construct2/extrasyn/tgt_data/'
+                    'np_edgelist.csv'
+}
 
 
 def csv2dict(path='node_mapping.csv', order=(1, 0)):
@@ -14,17 +19,17 @@ def csv2dict(path='node_mapping.csv', order=(1, 0)):
 
 me_to_barry = csv2dict()
 
-g = utl.json_deserialise(DATA)
-M = MultiplexConnectome(g)
-
 headers = ['src', 'tgt', 'weight', 'transmitter', 'receptor']
 
-for graph_name in ['Monoamine', 'Neuropeptide']:
-    graph = M[graph_name]
+for graph_name, path in DATA.items():
     edgelist = []
 
-    for src, tgt, data in graph.edges_iter(data=True):
-        edgelist.append((me_to_barry[src], me_to_barry[tgt], 1, data['transmitter'], data['receptor']))
+    with open(path) as f:
+        reader = csv.reader(f)
+        for row in reader:
+            edgelist.append((
+                me_to_barry[row[0]], me_to_barry[row[1]], 1, row[2], row[3]
+            ))
 
     edgelist = sorted(edgelist)
 
