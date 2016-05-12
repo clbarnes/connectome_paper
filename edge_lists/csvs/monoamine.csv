@@ -1,3 +1,4 @@
+src,tgt,weight,transmitter,receptor
 ADEL,ADAL,1,dopamine,dop-5
 ADEL,ADAR,1,dopamine,dop-5
 ADEL,ADEL,1,dopamine,dop-2

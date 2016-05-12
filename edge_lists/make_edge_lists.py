@@ -30,6 +30,7 @@ for graph_name in ['Monoamine', 'Neuropeptide']:
 
     with open('csvs/{}.csv'.format(graph_name.lower()), 'w') as f:
         writer = csv.writer(f)
+        writer.writerow(headers)
         for row in edgelist:
             writer.writerow(row)
 
