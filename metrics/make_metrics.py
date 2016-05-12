@@ -138,14 +138,15 @@ def make_most_metrics(root='graphs', parallel=True):
     else:
         set(map(par_dump_metrics, adj_paths))
 
+
 def get_control_type_roots(root):
     return [os.path.join(root, dirn) for dirn in os.listdir(root) if os.path.isdir(os.path.join(root, dirn))]
 
 
 @push_exceptions
 def main():
-    make_most_metrics('graphs/di_layers')
-    add_smallworld(*get_control_type_roots('graphs/di_layers'))
+    make_most_metrics('graphs/di_layers/')
+    add_smallworld(*get_control_type_roots('graphs/di_layers/'))
 
 
 if __name__ == "__main__":

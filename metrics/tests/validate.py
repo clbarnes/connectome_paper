@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import json
 from nose_parameterized import parameterized
+from abc import ABCMeta
 
 DIR_CSV_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'barry_data', 'basic_measures_dir.csv')
 UND_CSV_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'barry_data', 'basic_measures_und.csv')
@@ -39,8 +40,8 @@ graphs = [
 ]
 
 
-def load_barry_data(dir=True):
-    path = DIR_CSV_PATH if dir else UND_CSV_PATH
+def load_barry_data(directed=True):
+    path = DIR_CSV_PATH if directed else UND_CSV_PATH
     return pd.read_csv(path, index_col=0)
 
 
@@ -48,23 +49,23 @@ def test_name(testcase_func, param_num, param):
     return '{}_{}'.format(testcase_func.__name__, param.args[1])
 
 
-class BinTests:
-    barry_data_path = None
+class BinTests(metaclass=ABCMeta):
+    directed = None
 
     @classmethod
     def setUpClass(cls):
-        cls.barry_data = load_barry_data(cls.barry_data_path)
+        assert isinstance(cls.directed, bool)
+        cls.barry_data = load_barry_data(cls.directed)
 
     def assert_same_vals(self, long_metric_name, long_net_name, short_net_name):
         barry_val = self.barry_data[long_net_name][long_metric_name]
-        with open(name_to_path(short_net_name)) as f:
+        with open(name_to_path(short_net_name, self.directed)) as f:
             my_val = json.load(f)[metrics[long_metric_name]]
 
         if not np.allclose(barry_val, my_val, atol=1e-4):
             raise AssertionError('{} {}\n\tBarry: {}, \n\tMe: {}\n\tDiff: {}'.format(
                         dict(graphs)[long_net_name], long_metric_name.lower(), barry_val, my_val, barry_val-my_val
                     ))
-
 
     @parameterized.expand(graphs, testcase_func_name=test_name)
     def test_density(self, long_net_name, short_net_name):
@@ -92,7 +93,7 @@ class BinTests:
 
 
 class BinDirTests(BinTests, ut.TestCase):
-    barry_data_path = DIR_CSV_PATH
+    directed = True
 
 
 if __name__ == '__main__':

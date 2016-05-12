@@ -255,6 +255,28 @@ def di_combinations_from_layers():
             )
             np.save(os.path.join(control_dir, filename), adj)
 
+    make_other_rand()
+
+
+def make_other_rand():
+    out_root = os.path.join('graphs', 'di_layers')
+    out_dir = os.path.join(out_root, 'gj-ma-syn2')
+    control_dir = os.path.join(out_dir, 'controls')
+    os.makedirs(control_dir, exist_ok=True)
+    real_adj = collapse_list_of_arrays([np.load(os.path.join(out_root, layer, 'adj.npy')) for layer in ('gj', 'syn', 'ma')])
+    np.save(os.path.join(out_dir, 'adj.npy'), real_adj)
+
+    for filename in filename_iter(REPS + 1):
+        print('  generating {}'.format(filename))
+        adj = collapse_list_of_arrays(
+            [
+                np.load(os.path.join(out_root, 'gj', 'adj.npy')),
+                np.load(os.path.join(out_root, 'syn', 'adj.npy')),
+                np.load(os.path.join(out_root, 'ma', 'controls', filename)),
+            ]
+        )
+        np.save(os.path.join(control_dir, filename), adj)
+
 
 if __name__ == '__main__':
     # undi_combinations_setup()
